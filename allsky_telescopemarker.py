@@ -229,15 +229,11 @@ def mark_telescope_position(s, alt, az, observer_lat, observer_lon, observer_hei
     # Convert Alt/Az to pixel coordinates for the image location
     x, y = alt_az_to_pixel(alt, az, s.image.shape[1], s.image.shape[0], margin)
 
-    s.log(0, f"before image flip: {image_flip}, x: {x}, y: {y}")
     # Apply image flip option
     if image_flip == "Horizontal" or image_flip == "Both":
         x = s.image.shape[1] - x
-        s.log(0, f"horizontal image flip: {image_flip}, x: {x}, y: {y}")
     if image_flip == "Vertical" or image_flip == "Both":
         y = s.image.shape[0] - y
-        s.log(0, f"vertical image flip: {image_flip}, x: {x}, y: {y}")
-    s.log(0, f"after image flip: {image_flip}, x: {x}, y: {y}")
 
     # Draw a red circle to mark the position
     s.image = cv2.circle(s.image, (x - int(telescope_marker_radius/2), y - int(telescope_marker_radius/2)), telescope_marker_radius, telescope_marker_color, telescope_marker_width)
