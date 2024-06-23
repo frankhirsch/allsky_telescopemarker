@@ -17,6 +17,8 @@ In the module settings the are configuration options for:
 * Set azimuth rotation if your sensor is not pointing north
 * Customzize size/color of the marker
 
+![Sample AllSky image](165_parked_fisheye_image.jpg)
+
 ### Release info
 ### V0.1
 * Initial release developed based on AllSky v2023.05.01_04 and ASCOM Remote Server v6.7.1
