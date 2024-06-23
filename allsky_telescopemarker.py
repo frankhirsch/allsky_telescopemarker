@@ -33,6 +33,7 @@ metaData = {
         "image_lat": "48.58",
         "image_lon": "8.0",
         "image_height": "132",
+        "image_flip": "None",
         "camera_azimuth": "160.0",
         "margin": "60",
         "telescope_marker_radius": "30",
@@ -73,6 +74,16 @@ metaData = {
             "required": "false",
             "description": "Allsky's altitude [m]",
             "help": "Define allsky altutude, use 0m if left empty"
+        },
+        "image_flip": {
+            "required": "true",
+            "description": "Flip x,y coordinates",
+            "help": "Flip coordinates to match sensor/lens output and AllSky settings",            
+            "type": {
+                "fieldtype": "select",
+                "values": "None,Horizontal,Vertical,Both",
+                "default": "None"
+            }     
         },
         "camera_azimuth": {
             "required": "false",
@@ -193,7 +204,7 @@ def alt_az_to_pixel(alt, az, image_width, image_height, margin):
 
     return int(x), int(y)
 
-def mark_telescope_position(s, alt, az, observer_lat, observer_lon, observer_height, image_lat, image_lon, image_height, camera_azimuth, margin, telescope_marker_radius, telescope_marker_color, telescope_marker_width):
+def mark_telescope_position(s, alt, az, observer_lat, observer_lon, observer_height, image_lat, image_lon, image_height, image_flip, camera_azimuth, margin, telescope_marker_radius, telescope_marker_color, telescope_marker_width):
     """
     Mark the position of the telescope on the fisheye image based on RA and Dec.
 
@@ -218,6 +229,16 @@ def mark_telescope_position(s, alt, az, observer_lat, observer_lon, observer_hei
     # Convert Alt/Az to pixel coordinates for the image location
     x, y = alt_az_to_pixel(alt, az, s.image.shape[1], s.image.shape[0], margin)
 
+    s.log(0, f"before image flip: {image_flip}, x: {x}, y: {y}")
+    # Apply image flip option
+    if image_flip == "Horizontal" or image_flip == "Both":
+        x = s.image.shape[1] - x
+        s.log(0, f"horizontal image flip: {image_flip}, x: {x}, y: {y}")
+    if image_flip == "Vertical" or image_flip == "Both":
+        y = s.image.shape[0] - y
+        s.log(0, f"vertical image flip: {image_flip}, x: {x}, y: {y}")
+    s.log(0, f"after image flip: {image_flip}, x: {x}, y: {y}")
+
     # Draw a red circle to mark the position
     s.image = cv2.circle(s.image, (x - int(telescope_marker_radius/2), y - int(telescope_marker_radius/2)), telescope_marker_radius, telescope_marker_color, telescope_marker_width)
     
@@ -231,6 +252,7 @@ def telescopemarker(params, event):
     image_lat = float(params['image_lat'])
     image_lon = float(params['image_lon'])
     image_height = float(params['image_height'])
+    image_flip = params['image_flip']
     camera_azimuth = float(params['camera_azimuth'])
     margin = int(params['margin'])
     telescope_marker_radius = int(params['telescope_marker_radius'])
@@ -242,5 +264,5 @@ def telescopemarker(params, event):
     telescope_default = ast.literal_eval(params['telescope_default'])
 
     alt, az = get_telescope_position(telescope_server, telescope_alt, telescope_az, telescope_default)
-    mark_telescope_position(s, alt, az, observer_lat, observer_lon, observer_height, image_lat, image_lon, image_height, camera_azimuth, margin, telescope_marker_radius, telescope_marker_color, telescope_marker_width)
+    mark_telescope_position(s, alt, az, observer_lat, observer_lon, observer_height, image_lat, image_lon, image_height, image_flip, camera_azimuth, margin, telescope_marker_radius, telescope_marker_color, telescope_marker_width)
 
